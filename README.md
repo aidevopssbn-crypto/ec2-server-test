@@ -1,4 +1,4 @@
-# Terraform Configuration - 2025-11-09 11:26:38
+# Terraform Configuration - 2025-11-09 20:44:04
 
 ## Original Prompt
 Role: You are a terraform expert
@@ -61,10 +61,10 @@ Do not include any explanations, markdown formatting, or code fences (```).
 
 ## Generated Files
 
-### variables.tf
+### main.tf
 - Generated based on the prompt requirements
 
-### main.tf
+### variables.tf
 - Generated based on the prompt requirements
 
 ### output.tf

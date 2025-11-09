@@ -1,11 +1,11 @@
 provider "aws" {
-  region = var.aws_region
+  region = var.region
 }
 
 resource "aws_vpc" "aidevops_vpc" {
   cidr_block = var.vpc_cidr
   tags = {
-    Name = "aidevops-vpc"
+    Name = var.vpc_name
   }
 }
 
@@ -14,12 +14,12 @@ resource "aws_subnet" "aidevops_vpc_pubsubnet" {
   cidr_block        = var.public_subnet_cidr
   availability_zone = "us-east-1a"
   tags = {
-    Name = "aidevops-vpc-pubsubnet"
+    Name = var.public_subnet_name
   }
 }
 
 resource "aws_security_group" "aidevops_sg" {
-  name        = "aidevops-sg"
+  name        = var.security_group_name
   description = "Allow inbound traffic on ports 22 and 8070"
   vpc_id      = aws_vpc.aidevops_vpc.id
 
@@ -43,13 +43,17 @@ resource "aws_security_group" "aidevops_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  tags = {
+    Name = var.security_group_name
+  }
 }
 
 resource "aws_instance" "aidevops_server1" {
   ami           = var.ami_id
   instance_type = "t2.micro"
-  subnet_id = aws_subnet.aidevops_vpc_pubsubnet.id
   vpc_security_group_ids = [aws_security_group.aidevops_sg.id]
+  subnet_id = aws_subnet.aidevops_vpc_pubsubnet.id
   key_name               = var.key_name
   user_data = <<-EOF
               #!/bin/bash
@@ -59,11 +63,11 @@ resource "aws_instance" "aidevops_server1" {
               sudo sh -c 'echo deb https://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
               sudo apt update -y
               sudo apt install jenkins -y
-              sudo sed -i 's/HTTP_PORT=8080/HTTP_PORT=8070/' /etc/default/jenkins
-              sudo systemctl enable jenkins
-              sudo systemctl start jenkins
+              sudo sed -i 's/HTTP_PORT=8080/HTTP_PORT=8070/' /etc/jenkins/jenkins.conf
+              sudo service jenkins restart
+              sudo update-rc.d jenkins defaults
               EOF
   tags = {
-    Name = "aidevops-server1"
+    Name = var.ec2_instance_name
   }
 }
